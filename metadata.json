@@ -1,0 +1,8 @@
+{
+  "name": "Elevora",
+  "description": "All-in-one personal mentorship, productivity, and academic dashboard tailored for HSC 1st and 2nd year students.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

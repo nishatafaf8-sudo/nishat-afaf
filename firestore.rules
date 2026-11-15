@@ -1,0 +1,243 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid', 'name', 'hscYear', 'stream', 'district', 'faithMode', 'onboarded', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'name', 'hscYear', 'stream', 'district', 'faithMode', 'onboarded',
+          'college', 'sscGpa', 'sscBoard', 'languages', 'technicalSkills', 'objective',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.name is string && data.name.size() <= 120
+        && data.hscYear in ['HSC 1st Year', 'HSC 2nd Year']
+        && data.stream in ['Science', 'Commerce', 'Arts']
+        && data.district is string && data.district.size() >= 1 && data.district.size() <= 64
+        && data.faithMode in ['Muslim', 'Mind Refresh']
+        && data.onboarded is bool
+        && (!('college' in data) || (data.college is string && data.college.size() <= 160))
+        && (!('sscGpa' in data) || (data.sscGpa is string && data.sscGpa.size() <= 20))
+        && (!('sscBoard' in data) || (data.sscBoard is string && data.sscBoard.size() <= 64))
+        && (!('languages' in data) || (data.languages is string && data.languages.size() <= 240))
+        && (!('objective' in data) || (data.objective is string && data.objective.size() <= 800))
+        && (!('technicalSkills' in data) || (
+          data.technicalSkills is list
+          && data.technicalSkills.size() <= 30
+          && (data.technicalSkills.size() == 0 || data.technicalSkills[0] is string)
+        ))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPrivateInfo(data) {
+      return data.keys().hasAll(['uid', 'email', 'phone', 'portfolioUrl', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'phone', 'portfolioUrl', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.email is string && data.email.size() <= 160
+        && data.phone is string && data.phone.size() <= 40
+        && data.portfolioUrl is string && data.portfolioUrl.size() <= 240
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidWorkspaceState(data) {
+      return data.keys().hasAll([
+          'uid', 'salah', 'focusSessions', 'focusTasks', 'syllabusCompletedIds',
+          'customSyllabusChapters', 'completedBookPageKeys', 'completedChapterIds',
+          'chapterTakeaways', 'masteredVocabIds', 'pinnedVocabIds', 'customVocab',
+          'research', 'detHistory', 'skillSubmissions', 'ecas', 'events', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'salah', 'focusSessions', 'focusTasks', 'syllabusCompletedIds',
+          'customSyllabusChapters', 'completedBookPageKeys', 'completedChapterIds',
+          'chapterTakeaways', 'masteredVocabIds', 'pinnedVocabIds', 'customVocab',
+          'research', 'detHistory', 'skillSubmissions', 'ecas', 'events', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.salah is map
+        && data.focusSessions is list && data.focusSessions.size() <= 500
+        && (data.focusSessions.size() == 0 || data.focusSessions[0] is map)
+        && data.focusTasks is list && data.focusTasks.size() <= 300
+        && (data.focusTasks.size() == 0 || data.focusTasks[0] is map)
+        && data.syllabusCompletedIds is list && data.syllabusCompletedIds.size() <= 500
+        && (data.syllabusCompletedIds.size() == 0 || data.syllabusCompletedIds[0] is string)
+        && data.customSyllabusChapters is map
+        && data.completedBookPageKeys is list && data.completedBookPageKeys.size() <= 300
+        && (data.completedBookPageKeys.size() == 0 || data.completedBookPageKeys[0] is string)
+        && data.completedChapterIds is list && data.completedChapterIds.size() <= 100
+        && (data.completedChapterIds.size() == 0 || data.completedChapterIds[0] is string)
+        && data.chapterTakeaways is map
+        && data.masteredVocabIds is list && data.masteredVocabIds.size() <= 500
+        && (data.masteredVocabIds.size() == 0 || data.masteredVocabIds[0] is string)
+        && data.pinnedVocabIds is list && data.pinnedVocabIds.size() <= 500
+        && (data.pinnedVocabIds.size() == 0 || data.pinnedVocabIds[0] is string)
+        && data.customVocab is list && data.customVocab.size() <= 300
+        && (data.customVocab.size() == 0 || data.customVocab[0] is map)
+        && data.research is map
+        && data.detHistory is list && data.detHistory.size() <= 300
+        && (data.detHistory.size() == 0 || data.detHistory[0] is map)
+        && data.skillSubmissions is list && data.skillSubmissions.size() <= 200
+        && (data.skillSubmissions.size() == 0 || data.skillSubmissions[0] is map)
+        && data.ecas is list && data.ecas.size() <= 200
+        && (data.ecas.size() == 0 || data.ecas[0] is map)
+        && data.events is list && data.events.size() <= 200
+        && (data.events.size() == 0 || data.events[0] is map)
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStudentReview(data) {
+      return data.keys().hasAll([
+          'authorUid', 'authorName', 'hscContext', 'rating', 'comment', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'authorUid', 'authorName', 'hscContext', 'rating', 'comment', 'createdAt'
+        ])
+        && isValidId(data.authorUid)
+        && data.authorUid == request.auth.uid
+        && data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80
+        && data.hscContext is string && data.hscContext.size() >= 1 && data.hscContext.size() <= 80
+        && data.rating is int && data.rating >= 1 && data.rating <= 5
+        && data.comment is string && data.comment.size() >= 5 && data.comment.size() <= 400
+        && data.createdAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'hscYear', 'stream', 'district', 'faithMode', 'onboarded',
+          'college', 'sscGpa', 'sscBoard', 'languages', 'technicalSkills', 'objective',
+          'updatedAt'
+        ]);
+
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      match /private/{docId} {
+        allow get: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'info'
+          && isOwner(userId);
+        allow list: if false;
+
+        allow create: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'info'
+          && isOwner(userId)
+          && isValidPrivateInfo(incoming())
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+
+        allow update: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'info'
+          && isOwner(userId)
+          && isValidPrivateInfo(incoming())
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'email', 'phone', 'portfolioUrl', 'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+
+        allow delete: if isValidId(userId) && isValidId(docId) && isOwner(userId);
+      }
+
+      match /workspace/{docId} {
+        allow get: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'state'
+          && isOwner(userId);
+        allow list: if false;
+
+        allow create: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'state'
+          && isOwner(userId)
+          && isValidWorkspaceState(incoming())
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId));
+
+        allow update: if isValidId(userId)
+          && isValidId(docId)
+          && docId == 'state'
+          && isOwner(userId)
+          && isValidWorkspaceState(incoming())
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'salah', 'focusSessions', 'focusTasks', 'syllabusCompletedIds',
+            'customSyllabusChapters', 'completedBookPageKeys', 'completedChapterIds',
+            'chapterTakeaways', 'masteredVocabIds', 'pinnedVocabIds', 'customVocab',
+            'research', 'detHistory', 'skillSubmissions', 'ecas', 'events', 'updatedAt'
+          ])
+          && exists(/databases/$(database)/documents/users/$(userId));
+
+        allow delete: if isValidId(userId) && isValidId(docId) && isOwner(userId);
+      }
+    }
+
+    // Public non-PII student reviews displayed on the 1st landing page
+    match /reviews/{reviewId} {
+      allow get: if isValidId(reviewId);
+      allow list: if existing().rating in [1, 2, 3, 4, 5];
+
+      allow create: if isValidId(reviewId)
+        && isVerifiedUser()
+        && isValidStudentReview(incoming())
+        && incoming().createdAt == request.time;
+
+      allow update: if false;
+
+      allow delete: if isValidId(reviewId)
+        && isVerifiedUser()
+        && existing().authorUid == request.auth.uid;
+    }
+  }
+}

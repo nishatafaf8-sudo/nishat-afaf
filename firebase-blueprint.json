@@ -1,0 +1,268 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Core academic profile and preferences for an authenticated Elevora student.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the student owner."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 120,
+          "description": "Student display name."
+        },
+        "hscYear": {
+          "type": "string",
+          "enum": ["HSC 1st Year", "HSC 2nd Year"],
+          "description": "Student HSC class year."
+        },
+        "stream": {
+          "type": "string",
+          "enum": ["Science", "Commerce", "Arts"],
+          "description": "Student academic stream."
+        },
+        "district": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Bangladesh district for Salah & local schedule sync."
+        },
+        "faithMode": {
+          "type": "string",
+          "enum": ["Muslim", "Mind Refresh"],
+          "description": "Muslim Salah/Quran mode or universal Mind Refresh mode."
+        },
+        "onboarded": {
+          "type": "boolean",
+          "description": "Whether the student completed workspace setup."
+        },
+        "college": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Student college name for CV."
+        },
+        "sscGpa": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "SSC GPA string for CV."
+        },
+        "sscBoard": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "SSC education board for CV."
+        },
+        "languages": {
+          "type": "string",
+          "maxLength": 240,
+          "description": "Spoken and academic languages."
+        },
+        "technicalSkills": {
+          "type": "array",
+          "description": "Bounded list of student skills up to 30 items."
+        },
+        "objective": {
+          "type": "string",
+          "maxLength": 800,
+          "description": "CV career and academic objective."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when user record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was last updated."
+        }
+      },
+      "required": ["uid", "name", "hscYear", "stream", "district", "faithMode", "onboarded", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII contact fields belonging strictly to the authenticated user.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID matching parent user document."
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Student email address."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Student phone number."
+        },
+        "portfolioUrl": {
+          "type": "string",
+          "maxLength": 240,
+          "description": "Portfolio or LinkedIn URL."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last private contact update."
+        }
+      },
+      "required": ["uid", "email", "phone", "portfolioUrl", "updatedAt"]
+    },
+    "UserWorkspaceState": {
+      "title": "UserWorkspaceState",
+      "description": "Personalized Elevora workspace progress across Salah, Focus, HSC Syllabus, Books, Research, DET, Skills, ECAs, and Events.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the workspace owner."
+        },
+        "salah": {
+          "type": "object",
+          "description": "Daily Salah completion, Azan settings, streak, and Quran/Mind Refresh minutes."
+        },
+        "focusSessions": {
+          "type": "array",
+          "description": "Completed Pomodoro study sessions."
+        },
+        "focusTasks": {
+          "type": "array",
+          "description": "Study tasks with completion proof notes."
+        },
+        "syllabusCompletedIds": {
+          "type": "array",
+          "description": "Completed NCTB syllabus chapter IDs."
+        },
+        "customSyllabusChapters": {
+          "type": "object",
+          "description": "Map of subjectId to user-added custom chapters."
+        },
+        "completedBookPageKeys": {
+          "type": "array",
+          "description": "Completed page keys in Book Reader."
+        },
+        "completedChapterIds": {
+          "type": "array",
+          "description": "Completed book chapter IDs."
+        },
+        "chapterTakeaways": {
+          "type": "object",
+          "description": "Review takeaway notes keyed by chapter ID."
+        },
+        "masteredVocabIds": {
+          "type": "array",
+          "description": "IDs of mastered vocabulary flashcards."
+        },
+        "pinnedVocabIds": {
+          "type": "array",
+          "description": "IDs of flashcards pinned to Home."
+        },
+        "customVocab": {
+          "type": "array",
+          "description": "User-saved custom flashcards and learnings."
+        },
+        "research": {
+          "type": "object",
+          "description": "Research topic, equipment checklist, and paper draft."
+        },
+        "detHistory": {
+          "type": "array",
+          "description": "Logged DET practice history records."
+        },
+        "skillSubmissions": {
+          "type": "array",
+          "description": "Submitted skill assessments and AI Mentor evaluations."
+        },
+        "ecas": {
+          "type": "array",
+          "description": "User extracurricular activities synced to CV."
+        },
+        "events": {
+          "type": "array",
+          "description": "Custom upcoming event reminders."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last workspace synchronization."
+        }
+      },
+      "required": ["uid", "salah", "focusSessions", "focusTasks", "syllabusCompletedIds", "customSyllabusChapters", "completedBookPageKeys", "completedChapterIds", "chapterTakeaways", "masteredVocabIds", "pinnedVocabIds", "customVocab", "research", "detHistory", "skillSubmissions", "ecas", "events", "updatedAt"]
+    },
+    "StudentReview": {
+      "title": "StudentReview",
+      "description": "Public student review displayed on the Elevora landing page (contains no PII).",
+      "type": "object",
+      "properties": {
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the student author."
+        },
+        "authorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Public display name of reviewer."
+        },
+        "hscContext": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Academic context e.g. HSC 2nd Year · Science."
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Star rating from 1 to 5."
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 400,
+          "description": "Student review feedback text."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when review was submitted."
+        }
+      },
+      "required": ["authorUid", "authorName", "hscContext", "rating", "comment", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only student academic profile document."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Owner-only isolated PII document (docId = 'info')."
+    },
+    "/users/{userId}/workspace/{docId}": {
+      "schema": { "$ref": "#/entities/UserWorkspaceState" },
+      "description": "Owner-only personalized study workspace state (docId = 'state')."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/StudentReview" },
+      "description": "Public non-PII student reviews displayed on the 1st page."
+    }
+  }
+}
